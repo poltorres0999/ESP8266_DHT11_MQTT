@@ -1,30 +1,29 @@
 
-#include <ESP8266WiFI.h>
+#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <DHT.h>
-#include "LowPower.h"
 #include "ArduinoJson.h"
 #include "ArduinoJson.h"
 
 // I2C comunication pin
-#define DHT11_PIN D3 
+#define DHT11_PIN 0
 #define DHTTYPE DHT11
 
 // Device_details
-const char* DEVICE_ID = "";
-const char* DEVICE_LOCATION = "";
+const char* DEVICE_ID = "ESP8266_1";
+const char* D_LOCATION = "Barcelona";
 
 // Broker details
-const char* BROKER_SERVER = "";
-const int BROKER_PORT = 0;
+const char* BROKER_SERVER = "54.152.95.225";
+const int BROKER_PORT = 1883;
 
 // WiFi info/credentials
-const char* W_SSID = "";
-const char* W_PASS = "";
+const char* W_SSID = "AndroidAP_1102";
+const char* W_PASS = "Bartolo08";
 
 // MQTT publish topics
 const char* T_TOPIC = "RPI3_Temperature_Humidity/ESP8266_Temperature_Humidity/temperature";
-const char* H_TPIC = "RPI3_Temperature_Humidity/ESP8266_Temperature_Humidity/humidity";
+const char* H_TOPIC = "RPI3_Temperature_Humidity/ESP8266_Temperature_Humidity/humidity";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -44,9 +43,6 @@ void setup() {
 
 void loop() {
 
-  for (int i = 0 ;  i  <  4 ; i++)
-             LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
-
   if(!client.connected()) {
     reconnect();
   }
@@ -55,6 +51,8 @@ void loop() {
   sendJsonTemperature();
   delay(1000);
   sendJsonHumidity();
+
+  ESP.deepSleep(30e6); 
   
 }
 
@@ -62,7 +60,7 @@ void setupWiFi() {
   delay(10);
   // Attempt to conencto to WiFi network
   Serial.print("Connecting to: ");
-  serial.println(W_SSID);
+  Serial.println(W_SSID);
 
   WiFi.begin(W_SSID, W_PASS);
 
@@ -73,7 +71,7 @@ void setupWiFi() {
 
   Serial.print("Connection stablished to: ");
   Serial.println(W_SSID);
-  Serial.print("IP address: ")
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());  
 }
 
@@ -108,7 +106,7 @@ void sendJsonHumidity() {
   float h = dht.readHumidity();
   
   temperature["device_id"] = DEVICE_ID;
-  temperature["humidity"] = t;
+  temperature["humidity"] = h;
   temperature["location"] = D_LOCATION;
   serializeJson(humidity, msg);
   
